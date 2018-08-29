@@ -11,7 +11,9 @@ namespace HPSB_Automation.Models
     {
 
         private string rootText;
+        private string archive;
         private string incidentId;
+        private string sub_buffers_url;
         private string assignmentGroupName;
         private string affectedConfigurationItem;
         private string description;
@@ -26,26 +28,27 @@ namespace HPSB_Automation.Models
         public string IncidentId { get => incidentId; set => incidentId = value; }
         public string RootText { get => rootText; set => rootText = value; }
         public string[] HostArray { get => hostArray; set => hostArray = value; }
+        public string Archive { get => archive; set => archive = value; }
+        public string Sub_buffers_url { get => sub_buffers_url; set => sub_buffers_url = value; }
 
-        public Ticket()
-        {
-
-        }
-
-        public Ticket PopulateTicket(JObject json)
+        public Ticket(JObject json)
         {
             this.json = json;
-            Ticket ticket = new Ticket();
-            ticket.RootText = (string)json.SelectToken("root_text");
-            //ticket.HostArray =  JsonConvert.DeserializeObject<String[]>(json.SelectToken("host_names");
-            ticket.HostArray = json.SelectToken("host_names").ToString().Split(',');
-            ticket.AssignmentGroupName=(string)json.SelectToken("Incidents[0].AssignmentGroupName");
-            ticket.AffectedConfigurationItem = (string)json.SelectToken("Incidents[0].AffectedConfigurationItem.Name");
-            ticket.Description = (string)json.SelectToken("Incidents[0].Description");
-            ticket.CompanyCode = (string)json.SelectToken("MessageHeader.UserContext.CompanyCode");
-            ticket.IncidentId = (string)json.SelectToken("Incidents[0].IncidentId");
-            return ticket;
+            this.RootText = (string)json.SelectToken("root_text");
+            this.Archive = (string)json.SelectToken("archive");
+            this.HostArray = json.SelectToken("host_names").ToString().Split(',');
+            this.AssignmentGroupName = (string)json.SelectToken("Incidents[0].AssignmentGroupName");
+            this.AffectedConfigurationItem = (string)json.SelectToken("Incidents[0].AffectedConfigurationItem.Name");
+            this.Description = (string)json.SelectToken("Incidents[0].Description");
+            this.CompanyCode = (string)json.SelectToken("MessageHeader.UserContext.CompanyCode");
+            this.IncidentId = (string)json.SelectToken("Incidents[0].IncidentId");
+
         }
+
+        /*public Ticket PopulateTicket(JObject json)
+        {
+            
+        }*/
         
     }
 }

@@ -17,42 +17,45 @@ namespace HPSB_Automation.Models
 {
     public class DuplicatedFile
     {
-        private string host = "";
-        private string path = "";
+        
         private string user = "gonzalse";
         private string passwd = "C!heecowiizz1";
-        private string fullFileName = "";
-        private string fileName = "";
-        private string extension = "";
-        private string cmdRename = "";
-        private string cmdCheck = "";
-        bool exit = false;
-        public DuplicatedFile()
-        {
+        private bool exit = false;
 
-        }
         public bool CheckDuplicate(Ticket ticket)
         {
-            // ticket.RootText =  "File already exists: /G/Apps/CSN/archive/sdi/Wrap/Archive/EVENT_FRD_GCSN_20170303052041.gz
-            // already exists on the remote filesystem"
+            string host = "";
+            string path = "";
+            string fullFileName = "";
+            string fileNameWithoutExtension = "";
+            string extension = "";
+            string cmdRename = "";
+            string cmdCheck = "";
+            // ticket.RootText e.g. of content  "File already exists: /opt/cloudhost/intbroker/integrations/archive/incoming/BI/FieldGlass-TimeSheet-20170309.csv already exists on the remote filesystem"
             int posPath = ticket.RootText.LastIndexOf("/");
             if (posPath >= 0)
                 path = ticket.RootText.Substring(0, posPath);
+            // path e.g. of content "File already exists: /opt/cloudhost/intbroker/integrations/archive/incoming/BI"
             path = path.Substring(path.IndexOf("/"),path.Length - path.IndexOf("/"));
-            //Path was converted to /G/Apps/CSN/archive/sdi/Wrap/Archive
+            // path e.g. of content  "/opt/cloudhost/intbroker/integrations/archive/incoming/BI"
             int x = 0;
-            while (exit!=true)
+
+            //exit=true represents a rename applied and will check over the list of affected servers if multiple ( like a cluster )
+            while (exit!=true && x< ticket.HostArray.Length)
             {
                 host = ticket.HostArray[x];
                 fullFileName = ticket.RootText.Substring(ticket.RootText.LastIndexOf("/"), ticket.RootText.Length - ticket.RootText.LastIndexOf("/"));
                 fullFileName = fullFileName.Substring(0, fullFileName.IndexOf(" "));
+                // fullFileName e.g. of content "/FieldGlass-TimeSheet-20170309.csv"
+
                 //Saves extension of the file if it has to be used later while renaming
                 int filePos = fullFileName.IndexOf(".");
                 if (filePos >= 0)
-                    fileName = fullFileName.Substring(0, filePos);
-
+                    fileNameWithoutExtension = fullFileName.Substring(0, filePos);
+                // fileNameWithoutExtension e.g. of content "/FieldGlass-TimeSheet-20170309"
                 if (filePos != -1)
                     extension = fullFileName.Substring(filePos, fullFileName.Length - filePos);
+                // extension e.g. of content ".csv"
 
                 //LINUX CONNECTION
                 try
@@ -70,7 +73,7 @@ namespace HPSB_Automation.Models
                         var command = sshCon.RunCommand(cmdCheck);
                         if (command.ExitStatus == 0)
                         {
-                            cmdRename = "/opt/pb/bin/pbrun bash -c 'cd " + path + ";" + "mv " + path + fullFileName + " " + path + fileName + "_$(date +%s)" + extension + ";'";
+                            cmdRename = "/opt/pb/bin/pbrun bash -c 'cd " + path + ";" + "mv " + path + fullFileName + " " + path + fileNameWithoutExtension + "_$(date +%s)" + extension + ";'";
                             if (sshCon.RunCommand(cmdRename).ExitStatus == 0)
                             {
                                 exit = true;
@@ -86,7 +89,7 @@ namespace HPSB_Automation.Models
                         var command = sshCon.RunCommand(cmdCheck);
                         if (command.ExitStatus == 0)
                         {
-                            cmdRename = "/opt/pb/bin/pbrun ksh -c 'cd " + path + ";" + "mv " + path + fullFileName + " " + path + fileName + "_$(date +%s)" + extension + ";'";
+                            cmdRename = "/opt/pb/bin/pbrun ksh -c 'cd " + path + ";" + "mv " + path + fullFileName + " " + path + fileNameWithoutExtension + "_$(date +%s)" + extension + ";'";
                             if (sshCon.RunCommand(cmdRename).ExitStatus == 0)
                             {
                                 exit = true;
@@ -111,8 +114,8 @@ namespace HPSB_Automation.Models
                         //If connection was done                         
                         if (File.Exists(@"\\\iten\hpsb.txt"))
                         {
-                            string origin = "\\" + host + path.Replace(@"/",@"\") + fileName.Replace(@"/", @"\");
-                            string destination = "\\" + host + path.Replace(@"/", @"\") + fileName.Replace(@"/", @"\") + "1";
+                            string origin = "\\" + host + path.Replace(@"/",@"\") + fileNameWithoutExtension.Replace(@"/", @"\");
+                            string destination = "\\" + host + path.Replace(@"/", @"\") + fileNameWithoutExtension.Replace(@"/", @"\") + "1";
                             File.Move(@"\\hc4w00433\iten\hpsb.txt", @"\\hc4w00433\iten\hpsb.txt1");
                             exit = true;
                         }

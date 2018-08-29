@@ -22,32 +22,43 @@ namespace HPSB_Automation.Controllers
         [HttpPost]
         public Ticket JsonString(JObject json)
         {
+           
             if (json != null)
             {
+                bool ticketSolved = false;
                 log.writeLog("*************************New request found begin of request**************************");
-                //Fills ticket object with json received
-                Ticket ticket = new Ticket();
-                ticket = ticket.PopulateTicket(json);          
+                //Creates a new instance of ticket with json received from HTTPPOST 
+                Ticket ticket = new Ticket(json);        
                 log.writeLog(json.ToString());
                 log.writeLog("*******************************End of request****************************************");
-                //Recoveries will start only if root text is not null
-                if ( ticket.RootText!= null)
+                //Starts procedures to resolve the ticket
+                if ( ticket!= null)
                 {
                     //Start to check for dup files ( Win/Lx/Ux )
                     DuplicatedFile dupFile = new DuplicatedFile();
-                    bool exit=dupFile.CheckDuplicate(ticket);
-                    if (exit==true)
+                    ticketSolved = dupFile.CheckDuplicate(ticket);
+                    if (ticketSolved == true)
                     {
                         log.writeLog("Ticket was solved");
                     }
                     else
                     {
-                        log.writeLog("Ticket wasnt solved");
+                        //Start to check for passwd expired
+                        PasswordExpired passwdExp = new PasswordExpired();
+                        //passwdExp.CheckPassswd;
+                        if (ticketSolved == true)
+                        {
+                            log.writeLog("Ticket: " +ticket.IncidentId + " was solved");
+                        }
+                        else
+                        {
+                            log.writeLog("Ticket: " + ticket.IncidentId + " was NOT solved");
+                        }
                     }
 
+
                     return ticket;
-                }
-                
+                }                
             }
             return null;
         }
