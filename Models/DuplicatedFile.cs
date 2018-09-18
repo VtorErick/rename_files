@@ -18,8 +18,8 @@ namespace HPSB_Automation.Models
     public class DuplicatedFile
     {
         
-        private string user = "gonzalse";
-        private string passwd = "C!heecowiizz1";
+        private string user = "";
+        private string passwd = "";
         private bool exit = false;
 
         public bool CheckDuplicate(Ticket ticket)
@@ -105,9 +105,9 @@ namespace HPSB_Automation.Models
                 //WINDOWS CONNECTION
                 try
                 {
-                    string DomainSvcAccount = "americas";
-                    string winUserSvcAccount = "io1069go";
-                    string winPasswdSvcAccount = "C!heecowiizz1";
+                    string DomainSvcAccount = "";
+                    string winUserSvcAccount = "";
+                    string winPasswdSvcAccount = "";
                     ImpersonationHelper.Impersonate(DomainSvcAccount, winUserSvcAccount, winPasswdSvcAccount, delegate
                     {
                         //Your code here 
